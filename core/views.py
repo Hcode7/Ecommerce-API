@@ -10,13 +10,25 @@ from rest_framework.views import APIView
 import stripe
 from rest_framework.permissions import IsAdminUser, IsAuthenticated, AllowAny
 from django.conf import settings
+from rest_framework import status
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters
+from rest_framework.pagination import PageNumberPagination
 
 # Create your views here.
 
+class CustomPageNumberPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 100
 
 class ProductListView(generics.ListAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    filterset_fields = ['title' , 'price', 'created_at']
+    search_fileds = ['title', 'price']
+    pagination_class = CustomPageNumberPagination
 
 class ProductDetailView(generics.RetrieveAPIView):
     def get(self, *args, **kwargs):
@@ -57,18 +69,21 @@ class AddToCartView(APIView):
 
 class UpdateCart(APIView):
     def post(self, request, cart_id):
-        quantity = int(request.POST.get('quantity', 1))
+        quantity = int(request.data.get('quantity', 1))
         cart = get_object_or_404(Cart, user=request.user)
-        cartitem = get_object_or_404(CartItem, cart=cart, id=cart_id)
-
+        try:
+            cartitem = get_object_or_404(CartItem, cart=cart, id=cart_id)
+        except CartItem.DoesNotExist:
+            return Response({'detail' : "No CartItem matches the given query."}, status=status.HTTP_404_NOT_FOUND)
         if quantity > 0:
             cartitem.quantity = quantity
             cartitem.save()
+            return Response({'message': 'Cart updated successfully'}, status=status.HTTP_200_OK)
+
         else:
             cartitem.delete()
+            return Response({'message': 'Cart item removed successfully'}, status=status.HTTP_200_OK)
 
-        return JsonResponse({'message': 'Cart updated successfully'})
-    
 class CheckoutView(APIView):
     def post(self, request):
         stripe.api_key = settings.STRIPE_SEC_KEY

@@ -44,7 +44,7 @@ INSTALLED_APPS = [
     'core',
     'rest_framework',
     'rest_framework_simplejwt',
-
+    'django_filters',
 ]
 
 MIDDLEWARE = [
@@ -140,3 +140,18 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # STRIPE API KEY
 STRIPE_PUB_KEY = os.getenv('STRIPE_PUB_KEY', '')
 STRIPE_SEC_KEY = os.getenv('STRIPE_SEC_KEY', '')
+
+
+# DJANGO REST FRAMEWORK FILTER
+
+REST_FRAMEWORK = {
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend']
+}
+
+
+# Pagination
+
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10,
+}
