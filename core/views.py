@@ -27,7 +27,7 @@ class ProductListView(generics.ListAPIView):
     serializer_class = ProductSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filterset_fields = ['title' , 'price', 'created_at']
-    search_fileds = ['title', 'price']
+    search_fields = ['title', 'price']
     pagination_class = CustomPageNumberPagination
 
 class ProductDetailView(generics.RetrieveAPIView):
@@ -37,10 +37,12 @@ class ProductDetailView(generics.RetrieveAPIView):
         serializer = ProductSerializer(product)
         return Response(serializer.data)
     
+
 class AddProduct(generics.CreateAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     permission_classes = [IsAdminUser]
+
 
 class CartView(APIView):
     def get(self, request):
@@ -85,6 +87,7 @@ class UpdateCart(APIView):
             return Response({'message': 'Cart item removed successfully'}, status=status.HTTP_200_OK)
 
 class CheckoutView(APIView):
+    permission_classes = [IsAuthenticated]
     def post(self, request):
         stripe.api_key = settings.STRIPE_SEC_KEY
         if not request.user.is_authenticated:
@@ -135,11 +138,9 @@ class CheckoutView(APIView):
             'session_url': stripe_session.url,
         })
     
-
-
     
 class OrdersView(generics.ListAPIView):
-    queryset = Order
+    queryset = Order.objects.all()
     serializer_class = OrderSerializer
 
 class PaymentCancel(APIView):
