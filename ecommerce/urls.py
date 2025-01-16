@@ -8,13 +8,12 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 
+
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/register/', RegisterApiView.as_view(), name='register'),
-    path('api/logout/', LogoutView.as_view(), name='logout'),
-    path('api/token/', TokenObtainPairView.as_view(), name='get_token'),
-    path('api/token/refresh/', TokenRefreshView.as_view(), name='refresh_token'),
+    path('accounts/', include('allauth.urls')),
     path('api/', include('core.urls')),
+
 ]
 
 if settings.DEBUG:

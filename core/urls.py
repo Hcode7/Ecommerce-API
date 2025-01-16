@@ -1,15 +1,22 @@
-from django.urls import path
-from . import views
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from .views import ProductViewSet, AddProduct, CartViewSet, CartItemViewSet, CheckoutViewSet, OrdersView, PaymentCancel
 
+# Initialize router
+router = DefaultRouter()
+router.register(r'products', ProductViewSet, basename='product')
+router.register(r'cart', CartViewSet, basename='cart')
+router.register(r'cart-items', CartItemViewSet, basename='cart-item')
+router.register(r'checkout', CheckoutViewSet, basename='checkout')
 
 urlpatterns = [
-    path('products/', views.ProductListView.as_view(), name='product-list'),
-    path('product/<slug:slug>/', views.ProductDetailView.as_view(), name='product-detail'),
-    path('create/', views.AddProduct.as_view(), name='create'),
-    path('cart/', views.CartView.as_view(), name='cart'),
-    path('cart/add/<slug:slug>/', views.AddToCartView.as_view(), name='cart-add'),
-    path('cart/update/<int:cart_id>/', views.UpdateCart.as_view(), name='cart-update'),
-    path('checkout/', views.CheckoutView.as_view(), name='checkout'),
-    path('orders/', views.OrdersView.as_view(), name='order-history'),
-    path('payment-cancel/', views.PaymentCancel.as_view(), name='payment_cancel'),
+    # Register the viewsets with the router
+    path('', include(router.urls)),
+    
+    # Custom routes for adding products and orders
+    path('add-product/', AddProduct.as_view(), name='add-product'),
+    path('orders/', OrdersView.as_view(), name='orders'),
+    
+    # Stripe payment cancel route
+    path('payment-cancel/', PaymentCancel.as_view(), name='payment_cancel'),
 ]
